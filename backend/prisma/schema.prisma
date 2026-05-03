@@ -4,7 +4,32 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
-// Phase 2 will add User model
+enum UserRole {
+  WHOLESALER
+  RETAILER
+  ADMIN
+}
+
+enum UserStatus {
+  PENDING_APPROVAL
+  ACTIVE
+  SUSPENDED
+}
+
+model User {
+  id                String      @id @default(cuid())
+  email             String      @unique
+  passwordHash      String
+  role              UserRole
+  status            UserStatus  @default(PENDING_APPROVAL)
+  companyName       String
+  taxNumber         String      @unique
+  contactPhone      String?
+  address           String?
+  passwordResetToken String?
+  passwordResetExpiresAt DateTime?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+}

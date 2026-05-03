@@ -2,6 +2,9 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import dotenv from "dotenv";
+import { authRoutes } from "./routes/authRoutes.js";
+import { adminRoutes } from "./routes/adminRoutes.js";
+import { userRoutes } from "./routes/userRoutes.js";
 
 dotenv.config();
 
@@ -18,3 +21,7 @@ app.get("/api/health", (_req, res) => {
     message: "Hello from ParçaPazar 🔧",
   });
 });
+
+app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/users", userRoutes);
