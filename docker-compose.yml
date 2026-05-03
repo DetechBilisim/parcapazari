@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: parcapazar-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: parcapazar
+      POSTGRES_PASSWORD: parcapazar_dev_password
+      POSTGRES_DB: parcapazar_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - parcapazar-pgdata:/var/lib/postgresql/data
+
+volumes:
+  parcapazar-pgdata:
