@@ -1,5 +1,6 @@
 import { getCurrentUser, logout } from "../lib/auth";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 export default function DashboardPage() {
   const user = getCurrentUser();
@@ -9,6 +10,12 @@ export default function DashboardPage() {
     logout();
     navigate("/login");
   };
+
+  useEffect(() => {
+    if (user?.role === "WHOLESALER" && user.status === "ACTIVE") {
+      navigate("/wholesaler/listings");
+    }
+  }, [user, navigate]);
 
   if (!user) {
     navigate("/login");

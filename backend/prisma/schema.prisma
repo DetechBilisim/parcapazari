@@ -32,4 +32,63 @@ model User {
   passwordResetExpiresAt DateTime?
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
+  partListings      PartListing[]
+}
+
+enum PartCategory {
+  BRAKES
+  ENGINE
+  SUSPENSION
+  ELECTRICAL
+  TRANSMISSION
+  EXHAUST
+  COOLING
+  FILTERS
+  BODY
+  INTERIOR
+  OTHER
+}
+
+enum Currency {
+  TRY
+  EUR
+  USD
+}
+
+model Part {
+  id             String        @id @default(cuid())
+  sku            String        @unique
+  oemCodes       String[]
+  brand          String
+  name           String
+  description    String?
+  category       PartCategory
+  imageUrl       String?
+  vehicleMakes   String[]
+  vehicleModels  String[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  listings       PartListing[]
+}
+
+model PartListing {
+  id              String      @id @default(cuid())
+  partId          String
+  wholesalerId    String
+  price           Decimal     @db.Decimal(12, 2)
+  currency        Currency    @default(TRY)
+  stock           Int
+  minOrderQty     Int         @default(1)
+  isActive        Boolean     @default(true)
+  notes           String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  part            Part        @relation(fields: [partId], references: [id], onDelete: Cascade)
+  wholesaler      User        @relation(fields: [wholesalerId], references: [id], onDelete: Cascade)
+
+  @@unique([partId, wholesalerId])
+  @@index([partId])
+  @@index([wholesalerId])
 }

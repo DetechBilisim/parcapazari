@@ -21,7 +21,7 @@ export async function listPendingUsers(_req: AuthenticatedRequest, res: Response
 export async function approveUser(req: AuthenticatedRequest, res: Response) {
   const { userId } = req.params;
   const user = await prisma.user.update({
-    where: { id: userId },
+    where: { id: userId as string },
     data: { status: "ACTIVE" },
   });
   res.json({ message: "User approved", user });
@@ -29,6 +29,6 @@ export async function approveUser(req: AuthenticatedRequest, res: Response) {
 
 export async function rejectUser(req: AuthenticatedRequest, res: Response) {
   const { userId } = req.params;
-  await prisma.user.delete({ where: { id: userId } });
+  await prisma.user.delete({ where: { id: userId as string } });
   res.json({ message: "User rejected and removed" });
 }
