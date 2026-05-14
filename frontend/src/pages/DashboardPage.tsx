@@ -15,6 +15,9 @@ export default function DashboardPage() {
     if (user?.role === "WHOLESALER" && user.status === "ACTIVE") {
       navigate("/wholesaler/listings");
     }
+    else if (user?.role === "RETAILER" && user.status === "ACTIVE") {
+    navigate("/retailer/search");
+  }
   }, [user, navigate]);
 
   if (!user) {

@@ -4,6 +4,8 @@ import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
 import AdminPage from "./pages/AdminPage";
 import WholesalerListingsPage from "./pages/WholesalerListingsPage";
+import RetailerSearchPage from "./pages/RetailerSearchPage";
+import ProfilePage from "./pages/ProfilePage";
 
 export default function App() {
   return (
@@ -15,6 +17,8 @@ export default function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/wholesaler/listings" element={<WholesalerListingsPage />} />
+        <Route path="/retailer/search" element={<RetailerSearchPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </BrowserRouter>
   );
