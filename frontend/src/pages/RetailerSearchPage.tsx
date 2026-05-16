@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { searchApi, type PartWithListings, type SearchFilters } from "../api/search";
 import { getCurrentUser, logout } from "../lib/auth";
+import { cartApi } from "../api/cart";
 
 const CATEGORIES = [
   { value: "", label: "Tüm Kategoriler" },
@@ -82,6 +83,18 @@ export default function RetailerSearchPage() {
               className="text-sm text-slate-600 hover:text-slate-900"
             >
               Profil
+            </button>
+            <button
+              onClick={() => navigate("/cart")}
+              className="text-sm text-slate-600 hover:text-slate-900"
+            >
+            Sepet
+            </button>
+            <button
+              onClick={() => navigate("/orders")}
+              className="text-sm text-slate-600 hover:text-slate-900"
+            >
+              Siparişler
             </button>
             <button
               onClick={handleLogout}
@@ -191,6 +204,12 @@ function PartCard({ part }: { part: PartWithListings }) {
   const cheapest = part.listings[0];
   const totalStock = part.listings.reduce((sum, l) => sum + l.stock, 0);
 
+  const handleAddToCart = async (listingId: string) => {
+  await cartApi.addItem(listingId, 1);
+  alert("Sepete eklendi ✓");
+};
+
+
   return (
     <div className="bg-white rounded-2xl shadow overflow-hidden">
       <div className="p-5 border-b">
@@ -242,7 +261,7 @@ function PartCard({ part }: { part: PartWithListings }) {
                 </p>
                 <button
                   className="text-xs text-blue-600 hover:underline mt-1"
-                  onClick={() => alert("Sepet özelliği Phase 5'te eklenecek")}
+                  onClick={() => handleAddToCart(listing.id)}
                 >
                   Sepete ekle →
                 </button>

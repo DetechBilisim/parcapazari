@@ -9,8 +9,8 @@ import {
 export const searchRoutes = Router();
 
 // Retailers and admins can search. Wholesalers go through their own listing management.
-searchRoutes.use(authenticate, requireRole("RETAILER", "ADMIN"));
+searchRoutes.use(authenticate);
 
-searchRoutes.get("/search", searchParts);
-searchRoutes.get("/search/oem", searchOemCode);
-searchRoutes.get("/brands", listBrands);
+searchRoutes.get("/search", requireRole("RETAILER", "ADMIN"), searchParts);
+searchRoutes.get("/search/oem", requireRole("RETAILER", "ADMIN"), searchOemCode);
+searchRoutes.get("/brands", requireRole("RETAILER", "ADMIN"), listBrands);

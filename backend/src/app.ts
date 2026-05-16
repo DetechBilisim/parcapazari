@@ -8,6 +8,8 @@ import { adminRoutes } from "./routes/adminRoutes.js";
 import { userRoutes } from "./routes/userRoutes.js";
 import { listingRoutes } from "./routes/listingRoutes.js";
 import { searchRoutes } from "./routes/searchRoutes.js";
+import { cartRoutes } from "./routes/cartRoutes.js";
+import { orderRoutes } from "./routes/orderRoutes.js";
 
 dotenv.config();
 
@@ -31,3 +33,5 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api", listingRoutes);
 app.use("/api", searchRoutes);
+app.use("/api", cartRoutes);
+app.use("/api", orderRoutes);

@@ -151,9 +151,41 @@ async function seedParts() {
   console.log(`✅ Seeded ${parts.length} parts to catalog.`);
 }
 
+async function seedDiscountCodes() {
+  const existing = await prisma.discountCode.findFirst();
+  if (existing) {
+    console.log("Discount codes already seeded, skipping.");
+    return;
+  }
+
+  await prisma.discountCode.createMany({
+    data: [
+      {
+        code: "HOSGELDIN10",
+        discountPercent: 10,
+        maxUses: 1000,
+      },
+      {
+        code: "BAYRAM20",
+        discountPercent: 20,
+        maxUses: 50,
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+      },
+      {
+        code: "PARCAPAZAR5",
+        discountPercent: 5,
+        maxUses: 10000,
+      },
+    ],
+  });
+
+  console.log("✅ Seeded 3 discount codes.");
+}
+
 async function main() {
   await seedAdmin();
   await seedParts();
+  await seedDiscountCodes();
 }
 
 main()

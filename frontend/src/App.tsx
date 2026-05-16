@@ -6,6 +6,8 @@ import AdminPage from "./pages/AdminPage";
 import WholesalerListingsPage from "./pages/WholesalerListingsPage";
 import RetailerSearchPage from "./pages/RetailerSearchPage";
 import ProfilePage from "./pages/ProfilePage";
+import CartPage from "./pages/CartPage";
+import OrdersPage from "./pages/OrdersPage";
 
 export default function App() {
   return (
@@ -19,6 +21,8 @@ export default function App() {
         <Route path="/wholesaler/listings" element={<WholesalerListingsPage />} />
         <Route path="/retailer/search" element={<RetailerSearchPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/cart" element={<CartPage />} />
+        <Route path="/orders" element={<OrdersPage />} />
       </Routes>
     </BrowserRouter>
   );

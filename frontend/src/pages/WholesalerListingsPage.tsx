@@ -92,6 +92,12 @@ export default function WholesalerListingsPage() {
             <h1 className="text-2xl font-bold">{user.companyName}</h1>
             <p className="text-sm text-slate-500">Toptancı Paneli — Parça Listeleri</p>
           </div>
+          <button
+          onClick={() => navigate("/orders")}
+          className="text-sm text-slate-600 hover:text-slate-900"
+          >
+          Siparişler
+        </button>
           <button onClick={handleLogout} className="text-sm text-slate-600 hover:text-slate-900">
             Çıkış
           </button>
