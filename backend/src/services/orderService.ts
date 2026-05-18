@@ -1,11 +1,16 @@
 import { prisma } from "../lib/prisma.js";
 import { Decimal } from "@prisma/client/runtime/client.js";
 
-// Generate a human-readable order number
-function generateOrderNumber(): string {
-  const timestamp = Date.now().toString().slice(-8);
-  const random = Math.floor(Math.random() * 1000).toString().padStart(3, "0");
-  return `PP-${timestamp}-${random}`;
+async function generateOrderNumber(): Promise<string> {
+  await prisma.$executeRawUnsafe(
+    `CREATE SEQUENCE IF NOT EXISTS pp_order_seq START WITH 1000 INCREMENT BY 1`
+  );
+  const rows = await prisma.$queryRawUnsafe<{ nextval: bigint }[]>(
+    `SELECT nextval('pp_order_seq') AS nextval`
+  );
+  const seq = Number(rows[0].nextval).toString().padStart(6, "0");
+  const year = new Date().getFullYear();
+  return `PP-${year}-${seq}`;
 }
 
 interface CheckoutInput {
@@ -48,10 +53,11 @@ export async function checkout(input: CheckoutInput) {
 
     const discountAmount = subtotal.times(discountPercent).dividedBy(100);
     const total = subtotal.minus(discountAmount);
+    const orderNumber = await generateOrderNumber();
 
     const order = await prisma.order.create({
       data: {
-        orderNumber: generateOrderNumber(),
+        orderNumber,
         retailerId: input.retailerId,
         wholesalerId,
         status: "PAID", // mock payment auto-succeeds
@@ -132,6 +138,29 @@ export async function getOrderById(orderId: string) {
 }
 
 export async function updateOrderStatus(orderId: string, status: any) {
+  if (status === "CONFIRMED") {
+    return prisma.$transaction(async (tx) => {
+      const order = await tx.order.findUnique({
+        where: { id: orderId },
+        include: { items: true },
+      });
+      if (!order) throw new Error("Sipariş bulunamadı");
+
+      for (const item of order.items) {
+        await tx.partListing.update({
+          where: { id: item.partListingId },
+          data: { stock: { decrement: item.quantity } },
+        });
+      }
+
+      return tx.order.update({
+        where: { id: orderId },
+        data: { status },
+        include: { items: true },
+      });
+    });
+  }
+
   return prisma.order.update({
     where: { id: orderId },
     data: { status },

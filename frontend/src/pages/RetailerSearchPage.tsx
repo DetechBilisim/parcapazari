@@ -1,7 +1,33 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { searchApi, type PartWithListings, type SearchFilters } from "../api/search";
+import { useQuery } from "@apollo/client/react";
+import { SEARCH_PARTS, GET_BRANDS } from "../api/graphql/queries";
 import { getCurrentUser, logout } from "../lib/auth";
+
+type Listing = {
+  id: string;
+  price: number;
+  currency: string;
+  stock: number;
+  minOrderQty: number;
+  notes: string | null;
+  wholesaler: { id: string; companyName: string };
+};
+
+type GraphQLPart = {
+  id: string;
+  sku: string;
+  oemCodes: string[];
+  brand: string;
+  name: string;
+  vehicleMakes: string[];
+  vehicleModels: string[];
+  listings: Listing[];
+};
+
+type SearchPartsData = { parts: { items: GraphQLPart[]; totalCount: number; hasMore: boolean } };
+type BrandsData = { brands: string[] };
+
 import { cartApi } from "../api/cart";
 
 const CATEGORIES = [
@@ -23,44 +49,42 @@ export default function RetailerSearchPage() {
   const user = getCurrentUser();
   const navigate = useNavigate();
 
-  const [results, setResults] = useState<PartWithListings[]>([]);
-  const [brands, setBrands] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [filters, setFilters] = useState<SearchFilters>({
-    query: "",
-    brand: "",
-    category: "",
-    inStockOnly: true,
-  });
+  const [filters, setFilters] = useState({
+  query: "",
+  brand: "",
+  category: "",
+  currency: "" as "" | "TRY" | "EUR" | "USD",
+  inStockOnly: true,
+});
 
-  useEffect(() => {
-    if (!user || user.role !== "RETAILER") {
-      navigate("/login");
-      return;
-    }
-    loadBrands();
-    runSearch();
-  }, []);
+// Build the variables object for the GraphQL query
+const graphqlFilters = {
+  query: filters.query || undefined,
+  brand: filters.brand || undefined,
+  category: filters.category || undefined,
+  inStockOnly: filters.inStockOnly,
+};
 
-  const loadBrands = async () => {
-    const list = await searchApi.getBrands();
-    setBrands(list);
-  };
+const { data, loading, refetch } = useQuery<SearchPartsData>(SEARCH_PARTS, {
+  variables: { filters: graphqlFilters, limit: 50, offset: 0, inStockOnly: filters.inStockOnly },
+});
 
-  const runSearch = async () => {
-    setLoading(true);
-    try {
-      const data = await searchApi.searchParts(filters);
-      setResults(data);
-    } finally {
-      setLoading(false);
-    }
-  };
+const { data: brandsData } = useQuery<BrandsData>(GET_BRANDS);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    runSearch();
-  };
+const results = data?.parts?.items || [];
+const totalCount = data?.parts?.totalCount || 0;
+const brands: string[] = brandsData?.brands || [];
+
+useEffect(() => {
+  if (!user || user.role !== "RETAILER") {
+    navigate("/login");
+  }
+}, []);
+
+const handleSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
+  refetch({ filters: graphqlFilters, limit: 50, offset: 0, inStockOnly: filters.inStockOnly });
+};
 
   const handleLogout = () => {
     logout();
@@ -181,7 +205,7 @@ export default function RetailerSearchPage() {
         </form>
 
         <div className="mb-3 text-sm text-slate-500">
-          {results.length} parça bulundu
+          {loading ? "Yükleniyor..." : `${totalCount} parça bulundu`}
         </div>
 
         {results.length === 0 ? (
@@ -200,9 +224,9 @@ export default function RetailerSearchPage() {
   );
 }
 
-function PartCard({ part }: { part: PartWithListings }) {
+function PartCard({ part }: { part: GraphQLPart }) {
   const cheapest = part.listings[0];
-  const totalStock = part.listings.reduce((sum, l) => sum + l.stock, 0);
+  const totalStock = part.listings.reduce((sum: number, l: Listing) => sum + l.stock, 0);
 
   const handleAddToCart = async (listingId: string) => {
   await cartApi.addItem(listingId, 1);
@@ -232,7 +256,7 @@ function PartCard({ part }: { part: PartWithListings }) {
           <div className="text-right">
             <p className="text-xs text-slate-500">En düşük fiyat</p>
             <p className="font-bold text-2xl text-green-700">
-              {cheapest.price} {cheapest.currency}
+              {cheapest ? `${cheapest.price} ${cheapest.currency}` : "—"}
             </p>
             <p className="text-xs text-slate-500 mt-1">Toplam stok: {totalStock}</p>
           </div>
@@ -244,7 +268,7 @@ function PartCard({ part }: { part: PartWithListings }) {
           {part.listings.length} Toptancı
         </p>
         <div className="divide-y">
-          {part.listings.map((listing) => (
+          {part.listings.map((listing: Listing) => (
             <div key={listing.id} className="px-5 py-3 flex justify-between items-center hover:bg-slate-50">
               <div>
                 <p className="font-medium">{listing.wholesaler.companyName}</p>

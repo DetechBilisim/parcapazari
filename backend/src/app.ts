@@ -10,12 +10,14 @@ import { listingRoutes } from "./routes/listingRoutes.js";
 import { searchRoutes } from "./routes/searchRoutes.js";
 import { cartRoutes } from "./routes/cartRoutes.js";
 import { orderRoutes } from "./routes/orderRoutes.js";
+import { setupGraphQL } from "./graphql/server.js";
+
 
 dotenv.config();
 
 export const app = express();
 
-app.use(helmet());
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors());
 app.use(express.json());
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
@@ -35,3 +37,8 @@ app.use("/api", listingRoutes);
 app.use("/api", searchRoutes);
 app.use("/api", cartRoutes);
 app.use("/api", orderRoutes);
+
+export async function initializeApp() {
+  await setupGraphQL(app);
+  return app;
+}
