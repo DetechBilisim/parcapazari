@@ -36,6 +36,8 @@ model User {
   retailerCart       Cart?    @relation("RetailerCart")
   retailerOrders     Order[]  @relation("RetailerOrders")
   wholesalerOrders   Order[]  @relation("WholesalerOrders")
+  sentMessages      Message[] @relation("MessageSender")
+
 }
 
 enum PartCategory {
@@ -152,6 +154,7 @@ model Order {
   items           OrderItem[]
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
+  messages        Message[]
 
   @@index([retailerId])
   @@index([wholesalerId])
@@ -183,4 +186,20 @@ model DiscountCode {
   createdAt       DateTime @default(now())
 
   carts           Cart[]
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  orderId        String
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User     @relation("MessageSender", fields: [senderId], references: [id])
+  content        String
+  attachmentUrl  String?
+  attachmentName String?
+  attachmentType String?
+  createdAt      DateTime @default(now())
+
+  @@index([orderId])
+  @@index([senderId])
 }

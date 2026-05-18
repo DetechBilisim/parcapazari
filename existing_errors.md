@@ -19,3 +19,5 @@ solved by updating `updateOrderStatus` in `orderService.ts`: when the new status
 4-)(solved) Sadece Stoktakiler toggle is not working, even other products has no stocks, still appear when this toggle is selected.
 
 solved in two places: (1) `resolvers.ts` — the `parts` query now adds `where.listings = { some: { isActive: true, stock: { gt: 0 } } }` when `inStockOnly` is true, so parts with no in-stock listings are excluded at the database level. (2) `queries.ts` and `RetailerSearchPage.tsx` — the `listings(inStockOnly: ...)` field arg is now passed dynamically as a `$inStockOnly` variable instead of being hardcoded to `true`, so when the toggle is off, out-of-stock listings are shown too.
+
+5-) when wholesaler or retailer try to download image, gives error : {"error":"Missing or invalid authorization header"}

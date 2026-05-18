@@ -73,7 +73,7 @@ export default function OrdersPage() {
         ) : (
           <div className="space-y-4">
             {orders.map((order) => (
-              <div key={order.id} className="bg-white rounded-2xl shadow overflow-hidden">
+              <div key={order.id} className="bg-white rounded-2xl shadow overflow-hidden cursor-pointer hover:shadow-md transition" onClick={() => navigate(`/orders/${order.id}`)}>
                 <div className="px-5 py-3 border-b flex justify-between items-center bg-slate-50">
                   <div>
                     <p className="font-medium">{order.orderNumber}</p>
@@ -119,7 +119,11 @@ export default function OrdersPage() {
                     <div className="flex gap-2">
                       {order.status === "PAID" && (
                         <button
-                          onClick={() => updateStatus(order.id, "CONFIRMED")}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateStatus(order.id, "CONFIRMED")}
+                          
+                          }
                           className="bg-purple-600 text-white text-xs px-3 py-1 rounded"
                         >
                           Onayla
@@ -127,7 +131,10 @@ export default function OrdersPage() {
                       )}
                       {order.status === "CONFIRMED" && (
                         <button
-                          onClick={() => updateStatus(order.id, "SHIPPED")}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateStatus(order.id, "SHIPPED")
+                          }}
                           className="bg-indigo-600 text-white text-xs px-3 py-1 rounded"
                         >
                           Kargola
@@ -135,7 +142,10 @@ export default function OrdersPage() {
                       )}
                       {order.status === "SHIPPED" && (
                         <button
-                          onClick={() => updateStatus(order.id, "DELIVERED")}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateStatus(order.id, "DELIVERED")
+                          }}
                           className="bg-green-600 text-white text-xs px-3 py-1 rounded"
                         >
                           Teslim Edildi
