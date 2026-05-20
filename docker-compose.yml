@@ -1,16 +1,51 @@
+version: "3.9"
+
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: parcapazar-postgres
+    container_name: parcapazari
     restart: unless-stopped
     environment:
-      POSTGRES_USER: parcapazar
+      POSTGRES_USER: parcapazari
       POSTGRES_PASSWORD: parcapazar_dev_password
-      POSTGRES_DB: parcapazar_dev
+      POSTGRES_DB: parcapazari_dev
     ports:
-      - "5432:5432"
+      - "0.0.0.0:5432:5432"
     volumes:
-      - parcapazar-pgdata:/var/lib/postgresql/data
+      - parcapazari-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U parcapazari -d parcapazari_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: parcapazari-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql://parcapazari:parcapazar_dev_password@postgres:5432/parcapazari_dev?schema=public"
+      PORT: 4000
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./backend/uploads:/app/uploads
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: parcapazari-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
 
 volumes:
-  parcapazar-pgdata:
+  parcapazari-pgdata:

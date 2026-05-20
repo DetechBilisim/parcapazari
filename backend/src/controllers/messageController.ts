@@ -71,7 +71,9 @@ export async function getOrderMessages(req: AuthenticatedRequest, res: Response)
 }
 
 export async function downloadAttachment(req: AuthenticatedRequest, res: Response) {
-  const { filename } = req.params;
+  const filename = Array.isArray(req.params.filename)
+    ? req.params.filename[0]
+    : req.params.filename;
   const filePath = path.join(process.cwd(), "uploads", "messages", filename);
 
   if (!fs.existsSync(filePath)) {
