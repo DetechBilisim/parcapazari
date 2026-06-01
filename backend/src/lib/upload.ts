@@ -15,7 +15,10 @@ const storage = multer.diskStorage({
     cb(null, uniqueSuffix + "-" + file.originalname);
   },
 });
-
+export const partImageMemoryUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
 export const partImageUpload = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 },
