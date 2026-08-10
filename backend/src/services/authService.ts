@@ -120,9 +120,24 @@ export async function resetPassword(email: string, newPassword: string, token?: 
     throw new Error("User not found");
   }
 
-  // If a token is provided, validate it. If not, proceed anyway.
-  if (token && user.passwordResetToken && user.passwordResetToken !== token) {
-    throw new Error("Invalid token");
+  // Token is mandatory for password reset
+  if (!token) {
+    throw new Error("Reset token is required");
+  }
+
+  // Validate that a reset token exists for this user
+  if (!user.passwordResetToken) {
+    throw new Error("No password reset requested for this account");
+  }
+
+  // Validate token matches
+  if (user.passwordResetToken !== token) {
+    throw new Error("Invalid or expired reset token");
+  }
+
+  // Validate token has not expired
+  if (!user.passwordResetExpiresAt || user.passwordResetExpiresAt < new Date()) {
+    throw new Error("Invalid or expired reset token");
   }
 
   const passwordHash = await bcrypt.hash(newPassword, 10);
