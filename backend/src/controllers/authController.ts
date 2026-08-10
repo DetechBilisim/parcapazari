@@ -8,7 +8,12 @@ import {
 
 export async function register(req: Request, res: Response) {
   try {
-    const user = await registerUser(req.body);
+    // Defense in depth: Sanitize input to prevent role injection
+    // Remove any role field from the request body to ensure only the service layer
+    // can assign roles based on its security policy
+    const { role, ...sanitizedBody } = req.body;
+    
+    const user = await registerUser(sanitizedBody);
     res.status(201).json({
       message: "Registration successful. Awaiting admin approval.",
       user,
