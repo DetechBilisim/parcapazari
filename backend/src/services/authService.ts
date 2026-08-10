@@ -8,7 +8,7 @@ import type { UserRole } from "@prisma/client";
 interface RegisterInput {
   email: string;
   password: string;
-  role: UserRole;
+  role?: UserRole; // Optional - will be validated and restricted
   companyName: string;
   taxNumber: string;
   contactPhone?: string;
@@ -29,6 +29,16 @@ export async function registerUser(input: RegisterInput) {
     throw new Error("Email or tax number already registered");
   }
 
+  // Security: Restrict public registration to non-admin roles only
+  // ADMIN role can only be assigned by existing admins through separate admin endpoints
+  let assignedRole: UserRole;
+  if (input.role === "WHOLESALER" || input.role === "RETAILER") {
+    assignedRole = input.role;
+  } else {
+    // Default to RETAILER if role is missing, invalid, or ADMIN
+    assignedRole = "RETAILER";
+  }
+
   // Hash password (10 salt rounds — fast for dev)
   const passwordHash = await bcrypt.hash(input.password, 10);
 
@@ -36,7 +46,7 @@ export async function registerUser(input: RegisterInput) {
     data: {
       email: input.email,
       passwordHash,
-      role: input.role,
+      role: assignedRole,
       companyName: input.companyName,
       taxNumber: input.taxNumber,
       contactPhone: input.contactPhone,
@@ -64,8 +74,15 @@ export async function loginUser(email: string, password: string) {
     throw new Error("Invalid credentials");
   }
 
+  // Security: Only allow ACTIVE users to log in
+  // PENDING_APPROVAL users must wait for admin approval
+  // SUSPENDED users are explicitly blocked
   if (user.status === "SUSPENDED") {
     throw new Error("Account suspended");
+  }
+
+  if (user.status === "PENDING_APPROVAL") {
+    throw new Error("Account pending approval. Please wait for admin approval.");
   }
 
   const token = jwt.sign(
