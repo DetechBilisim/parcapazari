@@ -76,9 +76,11 @@ export const resolvers = {
       const results: any[] = await prisma.$queryRawUnsafe(
         `SELECT id, sku, brand, name, "imageUrl", category, "oemCodes", "vehicleMakes", "vehicleModels", description
          FROM "Part"
-         WHERE '${args.oemCode}' = ANY("oemCodes")
-            OR sku ILIKE '%${args.oemCode}%'
-         LIMIT 50`
+         WHERE $1 = ANY("oemCodes")
+            OR sku ILIKE $2
+         LIMIT 50`,
+        args.oemCode,
+        `%${args.oemCode}%`
       );
       return results;
     },
