@@ -47,3 +47,15 @@ export async function getOrderForMessaging(orderId: string) {
     },
   });
 }
+
+export async function getMessageByAttachmentUrl(attachmentUrl: string) {
+  return prisma.message.findFirst({
+    where: { attachmentUrl },
+    select: {
+      id: true,
+      orderId: true,
+      senderId: true,
+      attachmentUrl: true,
+    },
+  });
+}

@@ -6,6 +6,7 @@ import {
   sendMessage,
   listMessagesForOrder,
   getOrderForMessaging,
+  getMessageByAttachmentUrl,
 } from "../services/messageService.js";
 
 export async function postMessage(req: AuthenticatedRequest, res: Response) {
@@ -71,13 +72,51 @@ export async function getOrderMessages(req: AuthenticatedRequest, res: Response)
 }
 
 export async function downloadAttachment(req: AuthenticatedRequest, res: Response) {
+  if (!req.user) return res.status(401).json({ error: "Not authenticated" });
+
   const filename = Array.isArray(req.params.filename)
     ? req.params.filename[0]
     : req.params.filename;
-  const filePath = path.join(process.cwd(), "uploads", "messages", filename);
 
+  // Sanitize filename: reject any path traversal attempts
+  if (!filename || filename.includes("..") || filename.includes("/") || filename.includes("\\")) {
+    return res.status(400).json({ error: "Invalid filename" });
+  }
+
+  // Build the expected file path within the uploads directory
+  const uploadsDir = path.resolve(process.cwd(), "uploads", "messages");
+  const filePath = path.resolve(uploadsDir, filename);
+
+  // Ensure the resolved path is within the uploads directory (path containment check)
+  if (!filePath.startsWith(uploadsDir + path.sep)) {
+    return res.status(403).json({ error: "Access denied" });
+  }
+
+  // Check file existence
   if (!fs.existsSync(filePath)) {
     return res.status(404).json({ error: "Dosya bulunamadı" });
+  }
+
+  // Authorization: verify the user has access to this attachment
+  // The attachment URL format is /api/messages/attachment/:filename
+  const attachmentUrl = `/api/messages/attachment/${filename}`;
+  const message = await getMessageByAttachmentUrl(attachmentUrl);
+  
+  if (!message) {
+    return res.status(404).json({ error: "Attachment not found" });
+  }
+
+  // Verify user is involved in the order associated with this message
+  const order = await getOrderForMessaging(message.orderId);
+  if (!order) {
+    return res.status(404).json({ error: "Order not found" });
+  }
+
+  const isInvolved =
+    order.retailerId === req.user.userId ||
+    order.wholesalerId === req.user.userId;
+  if (!isInvolved && req.user.role !== "ADMIN") {
+    return res.status(403).json({ error: "Forbidden" });
   }
 
   res.sendFile(filePath);
