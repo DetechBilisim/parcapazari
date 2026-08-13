@@ -11,6 +11,7 @@ import { searchRoutes } from "./routes/searchRoutes.js";
 import { cartRoutes } from "./routes/cartRoutes.js";
 import { orderRoutes } from "./routes/orderRoutes.js";
 import { messageRoutes } from "./routes/messageRoutes.js";
+import { diagnosticsRoutes } from "./routes/diagnosticsRoutes.js";
 import { setupGraphQL } from "./graphql/server.js";
 
 
@@ -39,6 +40,7 @@ app.use("/api", searchRoutes);
 app.use("/api", cartRoutes);
 app.use("/api", orderRoutes);
 app.use("/api", messageRoutes);
+app.use("/api", diagnosticsRoutes);
 export async function initializeApp() {
   await setupGraphQL(app);
   return app;
