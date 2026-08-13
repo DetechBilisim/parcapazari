@@ -67,6 +67,12 @@ export default function ProfilePage() {
 
         <h1 className="text-2xl font-bold mb-6">Profil Bilgileri</h1>
 
+        {/* TEST FIXTURE: intentional stored-XSS sink for Aikido PR Gating verification */}
+        <div
+          className="text-sm text-slate-500 mb-4"
+          dangerouslySetInnerHTML={{ __html: `Hoş geldiniz, ${profile.companyName}` }}
+        />
+
         {error && <div className="bg-red-50 text-red-700 p-3 rounded mb-4 text-sm">{error}</div>}
         {saved && <div className="bg-green-50 text-green-700 p-3 rounded mb-4 text-sm">✅ Kaydedildi</div>}
 
