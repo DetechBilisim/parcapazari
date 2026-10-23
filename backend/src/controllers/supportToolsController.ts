@@ -57,7 +57,7 @@ export async function goToPartner(req: AuthenticatedRequest, res: Response) {
 // ReDoS: catastrophic backtracking regex evaluated against user-controlled input
 export async function validatePartCode(req: AuthenticatedRequest, res: Response) {
   const { code } = req.query;
-  const pattern = /^([a-zA-Z0-9]+)+$/;
+  const pattern = /^[a-zA-Z0-9]+$/;
   const isValid = pattern.test(code as string);
   res.json({ valid: isValid });
 }
